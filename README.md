@@ -6,8 +6,6 @@
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue)
 ![Gemini AI](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-orange)
 
----
-
 ## 🎯 What It Does
 
 Click the extension icon on any article, blog post, or news page and get:
@@ -17,8 +15,6 @@ Click the extension icon on any article, blog post, or news page and get:
 - **◇ Takeaway** — One powerful sentence capturing the core idea
 - **⏱ Reading time** — Estimated original reading time
 - **Highlight mode** — Marks key phrases on the actual page
-
----
 
 ## 🚀 Installation (Local / Unpacked)
 
@@ -47,8 +43,6 @@ Click the extension icon on any article, blog post, or news page and get:
 4. Click **"Save Settings"**
 
 That's it! Navigate to any article and click **"Summarize Page"**.
-
----
 
 ## 🏗 Architecture
 
@@ -88,8 +82,6 @@ ai-page-summarizer/
        ▼
 [Beautiful UI with stats, bullets, takeaway]
 ```
-
----
 
 ## 🤖 AI Integration (Gemini)
 
@@ -136,8 +128,6 @@ With a carefully crafted prompt that:
 }
 ```
 
----
-
 ## 🔐 Security Decisions
 
 | Decision | Why |
@@ -148,8 +138,6 @@ With a carefully crafted prompt that:
 | `host_permissions` scoped to Google API only | Minimal blast radius if extension is compromised |
 | Sanitized HTML rendering | Summary text is set via `.textContent`, never `.innerHTML` |
 | Content extraction runs in isolated function | Passed via `executeScript`, not string eval |
-
----
 
 ## ⚖️ Trade-offs
 
@@ -172,8 +160,6 @@ With a carefully crafted prompt that:
 - Service worker is non-persistent — wakes on demand
 - Background state isn't maintained between calls (stateless by design — a feature)
 
----
-
 ## 🎨 UI Features
 
 - **Light & Dark theme** — persisted per-user in storage
@@ -183,8 +169,6 @@ With a carefully crafted prompt that:
 - **Highlight mode** — marks key phrases green on the actual page
 - **Step-by-step loading** — animated progress indicator
 - **Error handling** — friendly messages for API errors, rate limits, bad pages
-
----
 
 ## 🛠 Development
 
@@ -196,8 +180,6 @@ To modify:
 3. Click the refresh icon on the Clarity card
 4. Re-open the popup
 
----
-
 ## 📋 Permissions Used
 
 | Permission | Why |
@@ -206,8 +188,6 @@ To modify:
 | `storage` | Save API key, theme, and cached summaries |
 | `scripting` | Inject content extractor into the page |
 | `host_permissions: generativelanguage.googleapis.com` | Make Gemini API calls |
-
----
 
 ## 🙋 FAQ
 
