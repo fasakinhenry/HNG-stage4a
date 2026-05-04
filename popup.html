@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clarity</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="logo-text">Clarity</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <button class="icon-btn theme-toggle" id="themeToggle" title="Toggle theme" aria-label="Toggle dark/light mode">
+        <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Settings Panel -->
+  <div class="settings-panel hidden" id="settingsPanel">
+    <div class="settings-inner">
+      <h3 class="settings-title">Settings</h3>
+      <div class="form-group">
+        <label for="apiKeyInput" class="form-label">
+          Gemini API Key
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" class="get-key-link">Get free key ↗</a>
+        </label>
+        <div class="key-input-wrap">
+          <input type="password" id="apiKeyInput" class="form-input" placeholder="AIza..." autocomplete="off" />
+          <button class="icon-btn toggle-key-btn" id="toggleKeyBtn" title="Show/hide key">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Summary Style</label>
+        <div class="style-options">
+          <button class="style-opt active" data-style="balanced">Balanced</button>
+          <button class="style-opt" data-style="brief">Brief</button>
+          <button class="style-opt" data-style="detailed">Detailed</button>
+        </div>
+      </div>
+      <button class="save-btn" id="saveSettings">Save Settings</button>
+      <p class="key-note">🔒 Your key is stored locally in Chrome only. Never sent anywhere except Google's API directly.</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="main" id="mainView">
+
+    <!-- Page Info -->
+    <div class="page-info" id="pageInfo">
+      <div class="page-favicon" id="pageFavicon"></div>
+      <div class="page-meta">
+        <p class="page-title" id="pageTitle">Loading page...</p>
+        <p class="page-url" id="pageUrl"></p>
+      </div>
+    </div>
+
+    <!-- No API Key State -->
+    <div class="state-card no-key-state hidden" id="noKeyState">
+      <div class="state-icon">🔑</div>
+      <p class="state-title">API Key Required</p>
+      <p class="state-desc">Add your free Gemini API key in Settings to start summarizing pages.</p>
+      <button class="primary-btn" id="openSettingsFromState">Open Settings</button>
+    </div>
+
+    <!-- Idle State -->
+    <div class="idle-state" id="idleState">
+      <div class="summarize-area">
+        <p class="summarize-hint">Ready to distill this page into clarity.</p>
+        <button class="primary-btn summarize-btn" id="summarizeBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          Summarize Page
+        </button>
+        <p class="cached-hint hidden" id="cachedHint">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-4.5L1 10"/></svg>
+          Cached result available
+        </p>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state hidden" id="loadingState">
+      <div class="loader-wrap">
+        <div class="loader-ring">
+          <div></div><div></div><div></div><div></div>
+        </div>
+        <p class="loader-text" id="loaderText">Extracting content...</p>
+      </div>
+      <div class="loader-steps">
+        <div class="step active" id="step1">
+          <span class="step-dot"></span>
+          <span>Reading page</span>
+        </div>
+        <div class="step" id="step2">
+          <span class="step-dot"></span>
+          <span>Sending to Gemini</span>
+        </div>
+        <div class="step" id="step3">
+          <span class="step-dot"></span>
+          <span>Generating summary</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state hidden" id="errorState">
+      <div class="error-icon">⚠️</div>
+      <p class="error-title" id="errorTitle">Something went wrong</p>
+      <p class="error-desc" id="errorDesc">Please check your API key and try again.</p>
+      <button class="primary-btn" id="retryBtn">Try Again</button>
+    </div>
+
+    <!-- Result State -->
+    <div class="result-state hidden" id="resultState">
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat">
+          <span class="stat-icon">⏱</span>
+          <span class="stat-value" id="readingTime">—</span>
+          <span class="stat-label">read</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-icon">📝</span>
+          <span class="stat-value" id="wordCount">—</span>
+          <span class="stat-label">words</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-icon">✦</span>
+          <span class="stat-value" id="insightCount">—</span>
+          <span class="stat-label">insights</span>
+        </div>
+      </div>
+
+      <!-- Summary Content -->
+      <div class="summary-scroll">
+
+        <section class="summary-section">
+          <h3 class="section-label">
+            <span class="section-label-icon">◈</span>
+            Summary
+          </h3>
+          <div class="summary-text" id="summaryText"></div>
+        </section>
+
+        <section class="summary-section">
+          <h3 class="section-label">
+            <span class="section-label-icon">◆</span>
+            Key Insights
+          </h3>
+          <ul class="insights-list" id="insightsList"></ul>
+        </section>
+
+        <section class="summary-section" id="conclusionSection">
+          <h3 class="section-label">
+            <span class="section-label-icon">◇</span>
+            Takeaway
+          </h3>
+          <p class="takeaway-text" id="takeawayText"></p>
+        </section>
+
+      </div>
+
+      <!-- Actions -->
+      <div class="result-actions">
+        <button class="action-btn copy-btn" id="copyBtn" title="Copy summary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+          Copy
+        </button>
+        <button class="action-btn highlight-btn" id="highlightBtn" title="Highlight on page">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          Highlight
+        </button>
+        <button class="action-btn clear-btn" id="clearBtn" title="Clear and reset">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          </svg>
+          Clear
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
