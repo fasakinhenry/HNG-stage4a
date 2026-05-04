@@ -202,3 +202,5 @@ A: Some pages use heavy JavaScript to render content. The extractor reads the DO
 
 **Q: Can I use GPT-4 instead of Gemini?**  
 A: Yes! In `src/background.js`, replace `GEMINI_ENDPOINT` with OpenAI's endpoint and adjust the request/response format. The architecture supports any AI API.
+
+> Made with ❤️ by [Fasakin henry](https://www.github.com/fasakinhenry) — pushing the boundaries of AI usability, one extension at a time.
