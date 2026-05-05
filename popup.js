@@ -1,6 +1,5 @@
 /**
  * popup.js — Clarity Extension UI Controller
- * Handles all popup interactions and communicates with background service worker
  */
 
 // ─── State ───────────────────────────────────────────────────────────────────
@@ -13,47 +12,46 @@ const state = {
   highlightsActive: false,
 };
 
-// ─── DOM Elements ─────────────────────────────────────────────────────────────
+// ─── DOM ──────────────────────────────────────────────────────────────────────
 const $ = (id) => document.getElementById(id);
 
 const els = {
-  themeToggle: $('themeToggle'),
-  settingsBtn: $('settingsBtn'),
-  settingsPanel: $('settingsPanel'),
-  mainView: $('mainView'),
-  apiKeyInput: $('apiKeyInput'),
-  toggleKeyBtn: $('toggleKeyBtn'),
-  saveSettings: $('saveSettings'),
-  styleOpts: document.querySelectorAll('.style-opt'),
-  pageTitle: $('pageTitle'),
-  pageUrl: $('pageUrl'),
-  pageFavicon: $('pageFavicon'),
-  noKeyState: $('noKeyState'),
-  idleState: $('idleState'),
-  loadingState: $('loadingState'),
-  errorState: $('errorState'),
-  resultState: $('resultState'),
-  summarizeBtn: $('summarizeBtn'),
-  retryBtn: $('retryBtn'),
-  clearBtn: $('clearBtn'),
-  copyBtn: $('copyBtn'),
-  highlightBtn: $('highlightBtn'),
+  themeToggle:         $('themeToggle'),
+  settingsBtn:         $('settingsBtn'),
+  settingsPanel:       $('settingsPanel'),
+  apiKeyInput:         $('apiKeyInput'),
+  toggleKeyBtn:        $('toggleKeyBtn'),
+  saveSettings:        $('saveSettings'),
+  styleOpts:           document.querySelectorAll('.style-opt'),
+  pageTitle:           $('pageTitle'),
+  pageUrl:             $('pageUrl'),
+  pageFavicon:         $('pageFavicon'),
+  noKeyState:          $('noKeyState'),
+  idleState:           $('idleState'),
+  loadingState:        $('loadingState'),
+  errorState:          $('errorState'),
+  resultState:         $('resultState'),
+  summarizeBtn:        $('summarizeBtn'),
+  retryBtn:            $('retryBtn'),
+  clearBtn:            $('clearBtn'),
+  copyBtn:             $('copyBtn'),
+  highlightBtn:        $('highlightBtn'),
   openSettingsFromState: $('openSettingsFromState'),
-  loaderText: $('loaderText'),
-  step1: $('step1'),
-  step2: $('step2'),
-  step3: $('step3'),
-  readingTime: $('readingTime'),
-  wordCount: $('wordCount'),
-  insightCount: $('insightCount'),
-  summaryText: $('summaryText'),
-  insightsList: $('insightsList'),
-  takeawayText: $('takeawayText'),
-  cachedHint: $('cachedHint'),
-  toast: $('toast'),
+  loaderText:          $('loaderText'),
+  step1:               $('step1'),
+  step2:               $('step2'),
+  step3:               $('step3'),
+  readingTime:         $('readingTime'),
+  wordCount:           $('wordCount'),
+  insightCount:        $('insightCount'),
+  summaryText:         $('summaryText'),
+  insightsList:        $('insightsList'),
+  takeawayText:        $('takeawayText'),
+  cachedHint:          $('cachedHint'),
+  toast:               $('toast'),
 };
 
-// ─── Init ──────────────────────────────────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   await loadPageInfo();
@@ -65,17 +63,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadSettings() {
   const data = await chrome.storage.local.get(['theme', 'apiKey', 'summaryStyle']);
 
-  state.theme = data.theme || 'light';
-  state.apiKey = data.apiKey || '';
+  state.theme        = data.theme        || 'light';
+  state.apiKey       = data.apiKey       || '';
   state.summaryStyle = data.summaryStyle || 'balanced';
 
   applyTheme(state.theme);
+  if (state.apiKey) els.apiKeyInput.value = state.apiKey;
 
-  if (state.apiKey) {
-    els.apiKeyInput.value = state.apiKey;
-  }
-
-  // Apply style selection
   els.styleOpts.forEach(opt => {
     opt.classList.toggle('active', opt.dataset.style === state.summaryStyle);
   });
@@ -87,14 +81,14 @@ async function saveSettings() {
   state.summaryStyle = document.querySelector('.style-opt.active')?.dataset.style || 'balanced';
 
   await chrome.storage.local.set({
-    theme: state.theme,
-    apiKey: state.apiKey,
+    theme:        state.theme,
+    apiKey:       state.apiKey,
     summaryStyle: state.summaryStyle,
   });
 
   showToast('Settings saved ✓');
   closeSettings();
-  updateNoKeyState();
+  updateReadyState();
 }
 
 function applyTheme(theme) {
@@ -102,75 +96,68 @@ function applyTheme(theme) {
   state.theme = theme;
 }
 
-// ─── Page Info ─────────────────────────────────────────────────────────────────
+// ─── Page Info ────────────────────────────────────────────────────────────────
 async function loadPageInfo() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab) return;
 
   state.currentUrl = tab.url;
   els.pageTitle.textContent = tab.title || 'Untitled Page';
-  els.pageUrl.textContent = new URL(tab.url).hostname;
 
-  // Favicon
+  try {
+    els.pageUrl.textContent = new URL(tab.url).hostname;
+  } catch (_) {
+    els.pageUrl.textContent = tab.url;
+  }
+
   const faviconUrl = `https://www.google.com/s2/favicons?domain=${new URL(tab.url).hostname}&sz=32`;
   const img = document.createElement('img');
   img.src = faviconUrl;
   img.alt = '';
   els.pageFavicon.appendChild(img);
 
-  updateNoKeyState();
+  updateReadyState();
 }
 
-function updateNoKeyState() {
-  if (!state.apiKey) {
-    showState('noKey');
-  } else {
-    showState('idle');
-  }
+// Decides whether to show the "no key" gate or the idle/ready state
+function updateReadyState() {
+  showState(state.apiKey ? 'idle' : 'noKey');
 }
 
-// ─── Cache Check ───────────────────────────────────────────────────────────────
+// ─── Cache ────────────────────────────────────────────────────────────────────
 async function checkCache() {
   if (!state.currentUrl) return;
   const cacheKey = `summary_${state.currentUrl}`;
   const data = await chrome.storage.local.get(cacheKey);
-  if (data[cacheKey]) {
-    els.cachedHint.classList.remove('hidden');
-  }
+  if (data[cacheKey]) els.cachedHint.classList.remove('hidden');
 }
 
-// ─── State Display ─────────────────────────────────────────────────────────────
+// ─── State Display ────────────────────────────────────────────────────────────
 function showState(which) {
-  const states = {
-    noKey: els.noKeyState,
-    idle: els.idleState,
+  const map = {
+    noKey:   els.noKeyState,
+    idle:    els.idleState,
     loading: els.loadingState,
-    error: els.errorState,
-    result: els.resultState,
+    error:   els.errorState,
+    result:  els.resultState,
   };
-
-  Object.values(states).forEach(el => el.classList.add('hidden'));
-  if (states[which]) states[which].classList.remove('hidden');
+  Object.values(map).forEach(el => el?.classList.add('hidden'));
+  map[which]?.classList.remove('hidden');
 }
 
-// ─── Settings Panel ─────────────────────────────────────────────────────────────
+// ─── Settings Panel ───────────────────────────────────────────────────────────
 function toggleSettings() {
-  const isOpen = !els.settingsPanel.classList.contains('hidden');
-  els.settingsPanel.classList.toggle('hidden', isOpen);
+  els.settingsPanel.classList.toggle('hidden');
 }
-
 function closeSettings() {
   els.settingsPanel.classList.add('hidden');
 }
 
-// ─── Summarize Flow ─────────────────────────────────────────────────────────────
+// ─── Summarize Flow ───────────────────────────────────────────────────────────
 async function startSummarize() {
-  if (!state.apiKey) {
-    showState('noKey');
-    return;
-  }
+  if (!state.apiKey) { showState('noKey'); return; }
 
-  // Check cache first
+  // Serve from cache if available
   const cacheKey = `summary_${state.currentUrl}`;
   const cached = await chrome.storage.local.get(cacheKey);
   if (cached[cacheKey]) {
@@ -179,10 +166,9 @@ async function startSummarize() {
   }
 
   showState('loading');
-  animateSteps();
+  setStep(1);
 
   try {
-    // Step 1: Extract content from page
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
     let pageContent;
@@ -193,33 +179,34 @@ async function startSummarize() {
       });
       pageContent = results[0]?.result;
     } catch (e) {
-      throw new Error('Cannot access this page. Try on a regular webpage.');
+      throw new Error('Cannot access this page. Try on a regular article or webpage.');
     }
 
     if (!pageContent || pageContent.text.length < 100) {
-      throw new Error('Not enough readable content found on this page.');
+      throw new Error('Not enough readable content found. Try a page with more article text.');
     }
 
-    // Step 2: Send to background for AI call
     setStep(2);
+
     const response = await chrome.runtime.sendMessage({
       type: 'SUMMARIZE',
       payload: {
-        text: pageContent.text,
-        title: pageContent.title,
-        url: state.currentUrl,
-        apiKey: state.apiKey,
-        style: state.summaryStyle,
+        text:   pageContent.text,
+        title:  pageContent.title,
+        url:    state.currentUrl,
+        apiKey: state.apiKey, // may be empty — background falls back to dev key
+        style:  state.summaryStyle,
       },
     });
 
     if (response.error) throw new Error(response.error);
 
     setStep(3);
-    await delay(500);
+    await delay(400);
 
-    // Save to cache
+    // Cache result
     await chrome.storage.local.set({ [cacheKey]: response.summary });
+    els.cachedHint.classList.remove('hidden');
 
     displayResult(response.summary);
   } catch (err) {
@@ -227,92 +214,68 @@ async function startSummarize() {
   }
 }
 
+// Runs inside page context — extracts clean article text
 function extractPageContent() {
-  /**
-   * Content extractor — runs in page context.
-   * Priority: article > main > body fallback with heuristic filtering.
-   */
   const title = document.title;
 
-  // Remove noise elements
   const noiseSelectors = [
-    'nav', 'header', 'footer', 'aside', '.sidebar', '.advertisement',
-    '.ads', '.cookie', '.popup', '.modal', '.nav', '.menu', '.social',
-    'script', 'style', 'noscript', '.comments', '#comments',
+    'nav','header','footer','aside','.sidebar','.advertisement','.ads',
+    '.cookie','.popup','.modal','.menu','.social','script','style',
+    'noscript','.comments','#comments','[role="banner"]','[role="navigation"]',
+    '.related','#related','.share','.sharing','.newsletter-signup',
   ];
 
-  // Clone the body to avoid mutating the page
   const bodyClone = document.body.cloneNode(true);
   noiseSelectors.forEach(sel => {
     bodyClone.querySelectorAll(sel).forEach(el => el.remove());
   });
 
-  // Try to find main content area
-  const contentPriority = [
+  const candidates = [
     bodyClone.querySelector('article'),
     bodyClone.querySelector('[role="main"]'),
     bodyClone.querySelector('main'),
-    bodyClone.querySelector('.post-content'),
-    bodyClone.querySelector('.article-content'),
-    bodyClone.querySelector('.entry-content'),
-    bodyClone.querySelector('#content'),
-    bodyClone.querySelector('.content'),
+    bodyClone.querySelector('.post-content, .article-content, .entry-content, .post-body'),
+    bodyClone.querySelector('#content, #main-content, #article'),
+    bodyClone.querySelector('.content, .main'),
     bodyClone,
   ].filter(Boolean);
 
-  const contentEl = contentPriority[0];
-
-  // Extract and clean text
-  let text = contentEl.innerText || contentEl.textContent || '';
-  text = text
-    .replace(/\n{3,}/g, '\n\n') // collapse excess newlines
-    .replace(/[ \t]{2,}/g, ' ')  // collapse spaces
+  const contentEl = candidates[0];
+  let text = (contentEl.innerText || contentEl.textContent || '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
     .trim();
 
-  // Limit to ~8000 chars to stay within token budget
-  if (text.length > 8000) {
-    text = text.slice(0, 8000) + '...';
-  }
+  // Cap at 10000 chars to stay within token budget while maximising content
+  if (text.length > 10000) text = text.slice(0, 10000) + '...';
 
   return { title, text, length: text.length };
 }
 
-// ─── Loading Animation ─────────────────────────────────────────────────────────
-let stepTimeout;
-
-function animateSteps() {
-  setStep(1);
-}
-
+// ─── Loading Steps ────────────────────────────────────────────────────────────
 function setStep(n) {
-  clearTimeout(stepTimeout);
-  [els.step1, els.step2, els.step3].forEach((el, i) => {
+  const steps   = [els.step1, els.step2, els.step3];
+  const labels  = ['Reading page content...', 'Sending to Gemini AI...', 'Crafting your summary...'];
+
+  steps.forEach((el, i) => {
     el.classList.remove('active', 'done');
-    if (i + 1 < n) el.classList.add('done');
+    if (i + 1 < n)  el.classList.add('done');
     if (i + 1 === n) el.classList.add('active');
   });
 
-  const messages = ['Reading page content...', 'Sending to Gemini AI...', 'Crafting your summary...'];
-  els.loaderText.textContent = messages[n - 1] || '';
+  els.loaderText.textContent = labels[n - 1] || '';
 }
 
-// ─── Display Result ─────────────────────────────────────────────────────────────
+// ─── Display Result ───────────────────────────────────────────────────────────
 function displayResult(summary) {
   state.currentSummary = summary;
 
-  // Stats
-  const wc = summary.wordCount || '—';
-  const rt = summary.readingTime || '—';
-  const ic = summary.insights?.length || 0;
+  els.wordCount.textContent   = Number(summary.wordCount || 0).toLocaleString();
+  els.readingTime.textContent = `${summary.readingTime || 1} min`;
+  els.insightCount.textContent = summary.insights?.length || 0;
 
-  els.wordCount.textContent = wc.toLocaleString?.() ?? wc;
-  els.readingTime.textContent = typeof rt === 'number' ? `${rt} min` : rt;
-  els.insightCount.textContent = ic;
-
-  // Summary text
   els.summaryText.textContent = summary.summary || '';
 
-  // Insights
   els.insightsList.innerHTML = '';
   (summary.insights || []).forEach((insight, i) => {
     const li = document.createElement('li');
@@ -321,26 +284,26 @@ function displayResult(summary) {
     els.insightsList.appendChild(li);
   });
 
-  // Takeaway
   els.takeawayText.textContent = summary.takeaway || '';
 
   showState('result');
 }
 
-// ─── Error ─────────────────────────────────────────────────────────────────────
+// ─── Error ────────────────────────────────────────────────────────────────────
 function showError(message) {
   $('errorTitle').textContent = 'Something went wrong';
-  $('errorDesc').textContent = message || 'An unexpected error occurred. Please try again.';
+  $('errorDesc').textContent  = message || 'An unexpected error occurred. Please try again.';
   showState('error');
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
 async function copyToClipboard() {
   if (!state.currentSummary) return;
-
   const s = state.currentSummary;
+
   const text = [
     `📄 ${els.pageTitle.textContent}`,
+    `🔗 ${state.currentUrl}`,
     '',
     '── Summary ──',
     s.summary,
@@ -352,55 +315,61 @@ async function copyToClipboard() {
     s.takeaway,
     '',
     `⏱ ${s.readingTime} min read · ${s.wordCount} words`,
-    `🔗 ${state.currentUrl}`,
+    'Summarized by Clarity Chrome Extension',
   ].join('\n');
 
   try {
     await navigator.clipboard.writeText(text);
+    const orig = els.copyBtn.innerHTML;
     els.copyBtn.classList.add('copied');
     els.copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
     setTimeout(() => {
       els.copyBtn.classList.remove('copied');
-      els.copyBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy`;
-    }, 2000);
+      els.copyBtn.innerHTML = orig;
+    }, 2200);
   } catch {
-    showToast('Copy failed. Try again.');
+    showToast('Copy failed — try again.');
   }
 }
 
 async function toggleHighlight() {
   if (!state.currentSummary?.insights) return;
-
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   state.highlightsActive = !state.highlightsActive;
 
   await chrome.tabs.sendMessage(tab.id, {
     type: state.highlightsActive ? 'HIGHLIGHT' : 'REMOVE_HIGHLIGHTS',
     payload: { insights: state.currentSummary.insights },
-  });
+  }).catch(() => {}); // silently ignore if content script isn't ready
 
   els.highlightBtn.style.color = state.highlightsActive ? 'var(--accent)' : '';
   showToast(state.highlightsActive ? 'Highlights added ✓' : 'Highlights removed');
 }
 
 async function clearResult() {
-  // Remove from cache
   const cacheKey = `summary_${state.currentUrl}`;
   await chrome.storage.local.remove(cacheKey);
-  state.currentSummary = null;
+  state.currentSummary   = null;
   state.highlightsActive = false;
   els.cachedHint.classList.add('hidden');
+
+  // Remove any active highlights
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    await chrome.tabs.sendMessage(tab.id, { type: 'REMOVE_HIGHLIGHTS' });
+  } catch (_) {}
+
   showState('idle');
 }
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
-let toastTimeout;
+let toastTimer;
 function showToast(msg) {
-  clearTimeout(toastTimeout);
+  clearTimeout(toastTimer);
   els.toast.textContent = msg;
   els.toast.classList.remove('hidden');
-  setTimeout(() => els.toast.classList.add('show'), 10);
-  toastTimeout = setTimeout(() => {
+  requestAnimationFrame(() => els.toast.classList.add('show'));
+  toastTimer = setTimeout(() => {
     els.toast.classList.remove('show');
     setTimeout(() => els.toast.classList.add('hidden'), 300);
   }, 2500);
@@ -408,27 +377,23 @@ function showToast(msg) {
 
 // ─── Event Listeners ──────────────────────────────────────────────────────────
 function setupEventListeners() {
-  // Theme
   els.themeToggle.addEventListener('click', () => {
-    const newTheme = state.theme === 'light' ? 'dark' : 'light';
-    applyTheme(newTheme);
-    chrome.storage.local.set({ theme: newTheme });
+    const next = state.theme === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    chrome.storage.local.set({ theme: next });
   });
 
-  // Settings
   els.settingsBtn.addEventListener('click', toggleSettings);
   els.saveSettings.addEventListener('click', saveSettings);
-  els.openSettingsFromState.addEventListener('click', () => {
-    showState('idle');
+  els.openSettingsFromState?.addEventListener('click', () => {
+    updateReadyState(); // ensure correct idle/nokey shown after
     els.settingsPanel.classList.remove('hidden');
   });
 
-  // API Key visibility
   els.toggleKeyBtn.addEventListener('click', () => {
     els.apiKeyInput.type = els.apiKeyInput.type === 'password' ? 'text' : 'password';
   });
 
-  // Style options
   els.styleOpts.forEach(opt => {
     opt.addEventListener('click', () => {
       els.styleOpts.forEach(o => o.classList.remove('active'));
@@ -437,18 +402,16 @@ function setupEventListeners() {
     });
   });
 
-  // Actions
   els.summarizeBtn.addEventListener('click', startSummarize);
-  els.retryBtn.addEventListener('click', startSummarize);
-  els.copyBtn.addEventListener('click', copyToClipboard);
+  els.retryBtn.addEventListener('click',     startSummarize);
+  els.copyBtn.addEventListener('click',      copyToClipboard);
   els.highlightBtn.addEventListener('click', toggleHighlight);
-  els.clearBtn.addEventListener('click', clearResult);
+  els.clearBtn.addEventListener('click',     clearResult);
 
-  // Keyboard: close settings on Escape
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeSettings();
   });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = ms => new Promise(r => setTimeout(r, ms));

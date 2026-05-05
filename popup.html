@@ -45,9 +45,10 @@
   <div class="settings-panel hidden" id="settingsPanel">
     <div class="settings-inner">
       <h3 class="settings-title">Settings</h3>
+
       <div class="form-group">
         <label for="apiKeyInput" class="form-label">
-          Gemini API Key
+          Your Gemini API Key
           <a href="https://aistudio.google.com/app/apikey" target="_blank" class="get-key-link">Get free key ↗</a>
         </label>
         <div class="key-input-wrap">
@@ -59,6 +60,7 @@
           </button>
         </div>
       </div>
+
       <div class="form-group">
         <label class="form-label">Summary Style</label>
         <div class="style-options">
@@ -67,12 +69,13 @@
           <button class="style-opt" data-style="detailed">Detailed</button>
         </div>
       </div>
+
       <button class="save-btn" id="saveSettings">Save Settings</button>
-      <p class="key-note">🔒 Your key is stored locally in Chrome only. Never sent anywhere except Google's API directly.</p>
+      <p class="key-note">🔒 Your key is stored locally in Chrome only, and sent directly to Google's Gemini API.</p>
     </div>
   </div>
 
-  <!-- Main Content -->
+  <!-- Main -->
   <main class="main" id="mainView">
 
     <!-- Page Info -->
@@ -88,20 +91,23 @@
     <div class="state-card no-key-state hidden" id="noKeyState">
       <div class="state-icon">🔑</div>
       <p class="state-title">API Key Required</p>
-      <p class="state-desc">Add your free Gemini API key in Settings to start summarizing pages.</p>
+      <p class="state-desc">Add your free Gemini API key in Settings to start summarizing pages instantly.</p>
       <button class="primary-btn" id="openSettingsFromState">Open Settings</button>
     </div>
 
     <!-- Idle State -->
     <div class="idle-state" id="idleState">
       <div class="summarize-area">
-        <p class="summarize-hint">Ready to distill this page into clarity.</p>
+
+<p class="summarize-hint">Ready to distill this page into clarity.</p>
+
         <button class="primary-btn summarize-btn" id="summarizeBtn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
           </svg>
           Summarize Page
         </button>
+
         <p class="cached-hint hidden" id="cachedHint">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 .49-4.5L1 10"/></svg>
           Cached result available
@@ -118,18 +124,9 @@
         <p class="loader-text" id="loaderText">Extracting content...</p>
       </div>
       <div class="loader-steps">
-        <div class="step active" id="step1">
-          <span class="step-dot"></span>
-          <span>Reading page</span>
-        </div>
-        <div class="step" id="step2">
-          <span class="step-dot"></span>
-          <span>Sending to Gemini</span>
-        </div>
-        <div class="step" id="step3">
-          <span class="step-dot"></span>
-          <span>Generating summary</span>
-        </div>
+        <div class="step active" id="step1"><span class="step-dot"></span><span>Reading page</span></div>
+        <div class="step" id="step2"><span class="step-dot"></span><span>Sending to Gemini</span></div>
+        <div class="step" id="step3"><span class="step-dot"></span><span>Generating summary</span></div>
       </div>
     </div>
 
@@ -144,7 +141,6 @@
     <!-- Result State -->
     <div class="result-state hidden" id="resultState">
 
-      <!-- Stats Bar -->
       <div class="stats-bar">
         <div class="stat">
           <span class="stat-icon">⏱</span>
@@ -165,36 +161,23 @@
         </div>
       </div>
 
-      <!-- Summary Content -->
       <div class="summary-scroll">
-
         <section class="summary-section">
-          <h3 class="section-label">
-            <span class="section-label-icon">◈</span>
-            Summary
-          </h3>
+          <h3 class="section-label"><span class="section-label-icon">◈</span>Summary</h3>
           <div class="summary-text" id="summaryText"></div>
         </section>
 
         <section class="summary-section">
-          <h3 class="section-label">
-            <span class="section-label-icon">◆</span>
-            Key Insights
-          </h3>
+          <h3 class="section-label"><span class="section-label-icon">◆</span>Key Insights</h3>
           <ul class="insights-list" id="insightsList"></ul>
         </section>
 
-        <section class="summary-section" id="conclusionSection">
-          <h3 class="section-label">
-            <span class="section-label-icon">◇</span>
-            Takeaway
-          </h3>
+        <section class="summary-section">
+          <h3 class="section-label"><span class="section-label-icon">◇</span>Takeaway</h3>
           <p class="takeaway-text" id="takeawayText"></p>
         </section>
-
       </div>
 
-      <!-- Actions -->
       <div class="result-actions">
         <button class="action-btn copy-btn" id="copyBtn" title="Copy summary">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -220,7 +203,6 @@
 
   </main>
 
-  <!-- Toast notification -->
   <div class="toast hidden" id="toast"></div>
 
   <script src="popup.js"></script>
